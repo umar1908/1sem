@@ -1,0 +1,154 @@
+#include "Warrior.h"
+#include "Spell.h"
+
+
+int Warrior::last_id=0;
+Warrior::Warrior (double hp,double damage):_hp(hp),_damage(damage),_alive(true),_id(last_id){last_id++;}
+
+
+ostream& operator<<(ostream& out,const Warrior& obj){
+  out<<"\n*********************\n";
+  out<<"id="<<obj._id<<endl;
+  obj.print(out);
+  out<<"\n*********************\n";
+  return out;
+
+}
+
+
+void Warrior::set_damage(double damage){
+  if (damage<0){
+    throw logic_error("Invalide damage");
+  }
+  _damage=damage;
+}
+
+  void Warrior::get_hurt(double damage){
+    _hp-=damage;
+    if (_hp<=0){
+      cout<<"Герой c id="<<_id<<" мертв\n";
+      _alive=false;
+    }
+  }
+  ostream& Goblin::print(ostream& out)const{
+    out<<"Тип:Гоблин\n";
+    if (is_alive()){
+      out<<"Статус:Жив\n"<<"Здоровье:"<<get_hp()<<endl<<"Базовый урон:"<<get_damage()
+      <<"\nТекущий урон:"<<get_damage()*get_hp()<<endl;
+      return out;
+    }
+    cout<<"Статус:мертв\n";
+    return out;
+  }
+  Goblin::Goblin():Warrior(20,5){
+      cout<<"Создан Гоблин с параметрами:\n"<<*this;
+  }
+  Goblin::Goblin(const std::string& name, const double& hp, const double& damage):Warrior(hp,damage),_name(name){
+    cout<<"Создан кастомизированный Гоблин с параметрами:\n"<<*this;
+    cout<<"По имени"<<this->_name<<endl;
+
+  }
+  Goblin::Goblin (std::string name):Warrior(20,5),_name(name){
+    cout<<"Создан кастомизированный Гоблин с параметрами:\n"<<*this;
+    cout<<"По имени"<<this->_name<<endl;
+  }
+
+  void Goblin::strike(Warrior& target){
+    if (is_alive()){
+      cout<<"(id="<<get_id()<<") атакует (id="<<target.get_id()<<") c уроном "<<get_damage()*get_hp()<<endl;
+    target.get_hurt(get_damage()*get_hp());
+    }
+    else{
+      cout<<"Мертвые не куcаются\n";
+    }
+  }
+
+  Orc::Orc():Warrior(1000,100),_stamina(1.0){
+    cout<<"Создан Орк с параметрами:\n"<<*this;
+  }
+
+  Orc::Orc(const std::string& name):Warrior(1000,100),_stamina(1.0),_name(name){
+    cout<<"Создан Орк с параметрами:\n"<<*this;
+    cout<<"С именем "<<this->_name<<endl;
+  }
+
+  Orc::Orc(const std::string& name, const double& stamina):Warrior(1000,100),_stamina(stamina),_name(name){
+    cout<<"Создан Орк с параметрами:\n"<<*this;
+    cout<<"С именем "<<this->_name<<endl;
+  }
+  void Orc::strike(Warrior& target){
+    cout<<"(id="<<get_id()<<") атакует (id="<<target.get_id()<<") c уроном "<<get_damage()*_stamina<<endl;
+    if (_stamina>0){
+
+      target.get_hurt(get_damage()*_stamina);
+      _stamina-=0.1;
+      if (abs(_stamina)<0.01){
+        _stamina=0;
+      }
+  }
+    else{
+      cout<<"Нет сил!"<<endl;
+    }
+  }
+  ostream& Orc::print(ostream& out)const{
+    out<<"Тип:Орк\n";
+    if (is_alive()){
+      out<<"Статус:Жив\n"<<"Здоровье:"<<get_hp()<<endl<<"Базовый урон:"<<get_damage()
+      <<"\nТекущий урон:"<<get_damage()*_stamina<<endl<<"Выносливость:"<<_stamina<<endl;
+      return out;
+    }
+    cout<<"Статус:мертв\n";
+    return out;
+  }
+  void Orc::relax(){
+    if (_stamina<1){
+      _stamina+=0.1;
+      cout<<"У(id="<<this->get_id()<<") восстановлена 0.1 выносливости";
+    }
+  }
+
+  Whitcher::Whitcher():Warrior(200,0),_mana(150),current_spell(new Default_spell){
+    cout<<"Создана Ведьма с параметрами:"<<*this;
+  }
+
+  Whitcher::Whitcher(const std::string& name): Warrior(200,0),_mana(150),current_spell(new Default_spell),_name(name){
+    cout<<"Создана Ведьма с параметрами:"<<*this;
+    cout<<"С именем "<<this->_name<<endl;
+  }
+
+  Whitcher::Whitcher(const double& mana): Warrior(200,0),_mana(mana),current_spell(new Default_spell){
+    cout<<"Создана Ведьма с параметрами:"<<*this;
+  }
+  void Whitcher::recharge(){
+    if (_mana<150){
+      _mana+=10;
+      cout<<"(id="<<get_id()<<") восстановил 10ед маны\n";
+    }
+  }
+
+  void Whitcher::strike(Warrior& target){
+    if (current_spell==nullptr){
+      cout<<"Не выбрано заклинание\n";
+      return;
+    }
+    cout<<"(id="<<get_id()<<") атакует (id="<<target.get_id()<<") c помощью "
+    <<current_spell->get_name()<<endl;
+    if (_mana>=current_spell->get_cost()){
+      target.get_hurt(current_spell->get_damage());
+      _mana-=current_spell->get_cost();
+    }
+    else{
+      cout<<"Недостаточно маны для выполенрия вышестоящей атаки\n";
+  }
+}
+
+ostream& Whitcher::print(ostream& out)const{
+  out<<"Тип:Ведьма\n";
+  if (is_alive()){
+    out<<"Статус:Жив\n"<<"Здоровье:"<<get_hp()<<endl<<"Выбранное заклинание:"<<current_spell->get_name()
+    <<"\nТекущий урон:"<<current_spell->get_damage()<<endl<<"Мана:"<<_mana<<endl;
+    return out;
+  }
+  cout<<"Статус:мертв\n";
+  return out;
+}

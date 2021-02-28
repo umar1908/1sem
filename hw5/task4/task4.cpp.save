@@ -1,0 +1,28 @@
+#include <iostream>
+#include <iomanip>
+using namespace std;
+#include "B.h"
+// #include <functional>
+// #include <algorithm>
+// #include <vector>
+// #include <string>
+// #include <cmath>
+ #include <cstdlib>
+
+
+
+int main(){
+  system("chcp 1251"); //для корректного отображения кирилицы
+  cout<<endl;
+  B b{3};
+  b.print();
+  return 0;
+}
+
+//если закомментировать этот код, то возникнет ошибка линковщика с опре
+/*void B::print()const{
+  cout<<x;
+}
+
+B::B(int _x):x(_x){}; */
+
